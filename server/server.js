@@ -1,9 +1,11 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors'); 
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(cors()); // разрешаем все кросс-доменные запросы
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -16,6 +18,7 @@ app.get('/', (req, res) => {
   });
 });
 
+// обработка ошибок и запуск
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
