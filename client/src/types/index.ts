@@ -8,13 +8,16 @@ export interface Ad {
   price: number;
   category: string;
   categoryId: number;
-  status: "pending" | "approved" | "rejected" | "draft"; // статусы
+  status: "pending" | "approved" | "rejected" | "draft";
   priority: "normal" | "urgent";
   createdAt: string;
   images: string[];
   seller: {
+    id: number;          
     name: string;
     rating: string;
+    totalAds: number;     
+    registeredAt: string; 
   };
 }
 
