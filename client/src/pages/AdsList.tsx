@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   useQuery,
   useMutation,
@@ -39,6 +39,7 @@ import StarIcon from "@mui/icons-material/Star";
 import FilterListOffIcon from "@mui/icons-material/FilterListOff";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import SearchIcon from "@mui/icons-material/Search"; 
 
 const CATEGORIES = [
   { id: 0, name: "Электроника" },
@@ -62,6 +63,9 @@ export const AdsList = () => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedAdIds, setSelectedAdIds] = useState<number[]>([]);
+
+  // ref для поля поиска (для горячей клавиши /)
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // чтение параметров из URL (источник правды для API)
   const page = Number(searchParams.get("page")) || 1;
@@ -125,6 +129,20 @@ export const AdsList = () => {
     urlMinPrice,
     urlMaxPrice,
   ]);
+
+  // hotkey '/' для поиска
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // если нажали '/' и фокус НЕ в поле ввода
+      if (e.key === '/' && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+        e.preventDefault(); // предотвращаем ввод символа '/' в поле
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const limit = 10;
 
@@ -285,12 +303,18 @@ export const AdsList = () => {
           <Grid size={{ xs: 12, md: 3 }}>
             <TextField
               fullWidth
+              inputRef={searchInputRef} // привязываем ref для фокуса по '/'
               label="Поиск по названию"
               variant="outlined"
               size="small"
               // привязываем к локальному стейту
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
+              slotProps={{
+                input: {
+                    endAdornment: <SearchIcon color="action" />
+                }
+              }}
             />
           </Grid>
 
