@@ -5,6 +5,10 @@ const API_URL = "http://localhost:3001/api/v1";
 
 export const api = axios.create({
   baseURL: API_URL,
+  // чтобы массивы (статусы) корректно улетали на сервер
+  paramsSerializer: {
+    indexes: false, // status=1&status=2 вместо status[]=1
+  },
 });
 
 // эта функция принимает params и возвращает Promise,
@@ -14,7 +18,7 @@ export const fetchAds = async (params: {
   limit: number;
   search?: string; // ? означает, что поле необязательное
   categoryId?: number;
-  status?: string;
+  status?: string[];
   minPrice?: number;
   maxPrice?: number;
   sortBy?: string;

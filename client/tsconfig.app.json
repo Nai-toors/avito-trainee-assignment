@@ -11,7 +11,7 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false, // на время разработки немного облегчим себе жизнь
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",

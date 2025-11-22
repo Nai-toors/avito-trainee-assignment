@@ -8,13 +8,13 @@ import {
 import {
   Container,
   Typography,
-  Grid,
   Paper,
   Box,
   ToggleButton,
   ToggleButtonGroup,
   CircularProgress,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2"; // Используем Grid2 (как в AdsList)
 import {
   BarChart,
   Bar,
@@ -34,6 +34,7 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 export const Stats = () => {
   const [period, setPeriod] = useState<"today" | "week" | "month">("week");
 
+  // Запросы к API
   const { data: summary, isLoading: isSumLoading } = useQuery({
     queryKey: ["stats", "summary", period],
     queryFn: () => fetchStats(period),
@@ -49,9 +50,10 @@ export const Stats = () => {
     queryFn: () => fetchStatsDecisions(period),
   });
 
+  // Обработчик переключения периода
   const handlePeriodChange = (
-    event: React.MouseEvent<HTMLElement>, 
-    newPeriod: "today" | "week" | "month" | null 
+    event: React.MouseEvent<HTMLElement>,
+    newPeriod: "today" | "week" | "month" | null
   ) => {
     if (newPeriod !== null) {
       setPeriod(newPeriod);
@@ -60,7 +62,7 @@ export const Stats = () => {
 
   const isLoading = isSumLoading || isActLoading || isDecLoading;
 
-  // подготовка данных для круговой диаграммы
+  // Подготовка данных для круговой диаграммы
   const pieData = decisions
     ? [
         { name: "Одобрено", value: decisions.approved },
@@ -93,48 +95,64 @@ export const Stats = () => {
       </Box>
 
       {isLoading ? (
-        <CircularProgress />
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
       ) : (
         <Grid container spacing={3}>
-          {/* карточки summary */}
-          <Grid item xs={12} md={3}>
+          {/* --- Карточки Summary --- */}
+
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper sx={{ p: 2, textAlign: "center", height: "100%" }}>
-              <Typography variant="h6">{summary?.totalReviewed}</Typography>
-              <Typography color="text.secondary">Всего проверено</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Paper sx={{ p: 2, textAlign: "center", height: "100%" }}>
-              <Typography variant="h6">
-                {summary?.approvedPercentage.toFixed(1)}%
+              <Typography variant="h4" color="primary">
+                {summary?.totalReviewed}
               </Typography>
-              <Typography color="text.secondary">Одобрено</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Paper sx={{ p: 2, textAlign: "center", height: "100%" }}>
-              <Typography variant="h6">
-                {summary?.rejectedPercentage.toFixed(1)}%
+              <Typography color="text.secondary" variant="body2">
+                Всего проверено
               </Typography>
-              <Typography color="text.secondary">Отклонено</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Paper sx={{ p: 2, textAlign: "center", height: "100%" }}>
-              <Typography variant="h6">
-                {summary?.averageReviewTime} сек
-              </Typography>
-              <Typography color="text.secondary">Ср. время проверки</Typography>
             </Paper>
           </Grid>
 
-          {/* график активности (столбчатый) */}
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ p: 2 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Paper sx={{ p: 2, textAlign: "center", height: "100%" }}>
+              <Typography variant="h4" color="success.main">
+                {summary?.approvedPercentage.toFixed(1)}%
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                Одобрено
+              </Typography>
+            </Paper>
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Paper sx={{ p: 2, textAlign: "center", height: "100%" }}>
+              <Typography variant="h4" color="error.main">
+                {summary?.rejectedPercentage.toFixed(1)}%
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                Отклонено
+              </Typography>
+            </Paper>
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Paper sx={{ p: 2, textAlign: "center", height: "100%" }}>
+              <Typography variant="h4">
+                {summary?.averageReviewTime} сек
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                Ср. время проверки
+              </Typography>
+            </Paper>
+          </Grid>
+
+          {/* --- График активности (Bar Chart) --- */}
+          <Grid size={{ xs: 12, md: 8 }}>
+            <Paper sx={{ p: 2, height: 400 }}>
               <Typography variant="h6" gutterBottom>
                 Активность
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={activity}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
@@ -153,13 +171,13 @@ export const Stats = () => {
             </Paper>
           </Grid>
 
-          {/* график решений (круговой) */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 2 }}>
+          {/* --- График решений (Pie Chart) --- */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Paper sx={{ p: 2, height: 400 }}>
               <Typography variant="h6" gutterBottom>
                 Решения
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieData}
