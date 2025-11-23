@@ -33,6 +33,7 @@ import {
   Tooltip,
   CircularProgress,
   IconButton,
+  useTheme,
 } from "@mui/material";
 
 // Иконки
@@ -54,6 +55,7 @@ export const AdItem = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const theme = useTheme();
 
   const fromIds = (location.state as { fromIds?: number[] })?.fromIds || [];
   const backSearch = (location.state as { search?: string })?.search || "";
@@ -368,8 +370,8 @@ export const AdItem = () => {
             maxHeight: 500,
             objectFit: "contain",
             borderRadius: 2,
-            bgcolor: "#f0f0f0",
-            border: "1px solid #eee",
+            bgcolor: theme.palette.mode === "dark" ? "grey.900" : "#f0f0f0",
+            border: `1px solid ${theme.palette.divider}`,
           }}
         />
         <Box sx={{ display: "flex", gap: 1, mt: 1, overflowX: "auto", pb: 1 }}>
@@ -387,7 +389,7 @@ export const AdItem = () => {
                 cursor: "pointer",
                 border:
                   activeImage === index
-                    ? "2px solid #1976d2"
+                    ? `2px solid ${theme.palette.primary.main}`
                     : "2px solid transparent",
                 opacity: activeImage === index ? 1 : 0.7,
               }}

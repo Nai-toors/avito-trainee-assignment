@@ -34,8 +34,9 @@ import {
   InputAdornment,
   alpha,
   Fade,
+  useTheme,
 } from "@mui/material";
-import type {SelectChangeEvent} from "@mui/material";
+import type { SelectChangeEvent } from "@mui/material";
 
 import Grid from "@mui/material/Grid2";
 import FilterListOffIcon from "@mui/icons-material/FilterListOff";
@@ -67,6 +68,7 @@ export const AdsList = () => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedAdIds, setSelectedAdIds] = useState<number[]>([]);
+  const theme = useTheme(); // bспользуем тему
 
   // ref для поля поиска (для горячей клавиши /)
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -167,17 +169,20 @@ export const AdsList = () => {
       sortOrder,
     ],
     queryFn: ({ signal }) =>
-      fetchAds({
-        page,
-        limit,
-        search: urlSearch,
-        categoryId: category ? Number(category) : undefined,
-        status: statusParam.length > 0 ? statusParam : undefined,
-        minPrice: urlMinPrice ? Number(urlMinPrice) : undefined,
-        maxPrice: urlMaxPrice ? Number(urlMaxPrice) : undefined,
-        sortBy,
-        sortOrder,
-      }, signal),
+      fetchAds(
+        {
+          page,
+          limit,
+          search: urlSearch,
+          categoryId: category ? Number(category) : undefined,
+          status: statusParam.length > 0 ? statusParam : undefined,
+          minPrice: urlMinPrice ? Number(urlMinPrice) : undefined,
+          maxPrice: urlMaxPrice ? Number(urlMaxPrice) : undefined,
+          sortBy,
+          sortOrder,
+        },
+        signal
+      ),
     // оставляем старые данные пока грузятся новые - убирает "мигание" интерфейса
     placeholderData: keepPreviousData,
     //  !! автообновление списка (в мс) - задание со *, однако что означает "Статус объявления" в пунтке 6.3 я не понял,
@@ -289,11 +294,13 @@ export const AdsList = () => {
           mb: 3,
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 700, color: "#1a1a1a" }}>
+        <Typography
+          variant="h4"
+          sx={{ fontWeight: 700, color: "text.primary" }}
+        >
           Список объявлений
-          {/* индикатор фоновой загрузки при смене фильтров */}
           {isFetching && (
-            <CircularProgress size={24} sx={{ ml: 2, color: "#667eea" }} />
+            <CircularProgress size={24} sx={{ ml: 2, color: "primary.main" }} />
           )}
         </Typography>
         <Button
@@ -313,8 +320,8 @@ export const AdsList = () => {
           p: 2,
           mb: 4,
           borderRadius: 3,
-          bgcolor: "white",
-          border: "1px solid #E0E0E0",
+          bgcolor: "background.paper",
+          border: `1px solid ${theme.palette.divider}`,
         }}
       >
         <Grid container spacing={2} alignItems="center">
@@ -388,25 +395,18 @@ export const AdsList = () => {
                           label={status?.label}
                           size="small"
                           sx={{
-                            bgcolor:
+                            // ИСПРАВЛЕНО: более мягкая работа с цветами через theme.palette
+                            bgcolor: alpha(
                               status?.color === "default"
-                                ? "#f0f0f0"
-                                : alpha(
-                                    status?.color === "warning"
-                                      ? "#ed6c02"
-                                      : status?.color === "success"
-                                      ? "#2e7d32"
-                                      : "#d32f2f",
-                                    0.1
-                                  ),
+                                ? theme.palette.action.selected
+                                : theme.palette[status?.color || "primary"]
+                                    .main,
+                              0.15
+                            ),
                             color:
                               status?.color === "default"
                                 ? "text.primary"
-                                : status?.color === "warning"
-                                ? "#ed6c02"
-                                : status?.color === "success"
-                                ? "#2e7d32"
-                                : "#d32f2f",
+                                : `${status?.color}.main`,
                             fontWeight: 600,
                             borderRadius: 1,
                           }}
@@ -514,8 +514,8 @@ export const AdsList = () => {
               gap: 2,
               pl: 3,
               pr: 1.5,
-              bgcolor: "#1a1a1a",
-              color: "white",
+              bgcolor: "text.primary",
+              color: "background.paper",
             }}
           >
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -590,14 +590,16 @@ export const AdsList = () => {
                   position: "relative",
                   borderRadius: 3,
                   border: isSelected
-                    ? "2px solid #3B82F6"
-                    : "1px solid #e0e0e0",
-                  bgcolor: isSelected ? "#F0F9FF" : "white",
-                  opacity: isFetching ? 0.6 : 1, // визуальный эффект при подгрузке (типо данные обновились)
+                    ? `2px solid ${theme.palette.primary.main}`
+                    : `1px solid ${theme.palette.divider}`,
+                  bgcolor: isSelected
+                    ? alpha(theme.palette.primary.main, 0.05)
+                    : "background.paper",
+                  opacity: isFetching ? 0.6 : 1,
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
-                    borderColor: "#B0B8C4",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                    borderColor: "text.secondary",
+                    boxShadow: 4,
                     transform: "translateY(-2px)",
                   },
                 }}
@@ -609,11 +611,11 @@ export const AdsList = () => {
                     top: 8,
                     left: 8,
                     zIndex: 2,
-                    bgcolor: "rgba(255,255,255,0.9)",
+                    bgcolor: alpha(theme.palette.background.paper, 0.8),
                     backdropFilter: "blur(4px)",
                     borderRadius: 1,
                     p: 0.5,
-                    "&:hover": { bgcolor: "white" },
+                    "&:hover": { bgcolor: "background.paper" },
                   }}
                   size="small"
                   checked={isSelected}
@@ -676,25 +678,17 @@ export const AdsList = () => {
                         fontSize: "0.7rem",
                         fontWeight: 600,
                         borderRadius: 1.5,
-                        bgcolor:
+                        bgcolor: alpha(
                           statusConfig?.color === "default"
-                            ? "#f5f5f5"
-                            : alpha(
-                                statusConfig?.color === "warning"
-                                  ? "#ed6c02"
-                                  : statusConfig?.color === "success"
-                                  ? "#2e7d32"
-                                  : "#d32f2f",
-                                0.1
-                              ),
+                            ? theme.palette.action.selected
+                            : theme.palette[statusConfig?.color || "primary"]
+                                .main,
+                          0.15
+                        ),
                         color:
                           statusConfig?.color === "default"
                             ? "text.secondary"
-                            : statusConfig?.color === "warning"
-                            ? "#ed6c02"
-                            : statusConfig?.color === "success"
-                            ? "#2e7d32"
-                            : "#d32f2f",
+                            : `${statusConfig?.color}.main`,
                       }}
                     />
                     <Typography
@@ -717,6 +711,7 @@ export const AdsList = () => {
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: "vertical",
+                      color: "text.primary",
                     }}
                     title={ad.title}
                   >
