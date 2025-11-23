@@ -1,5 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import DownloadIcon from "@mui/icons-material/Download";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import {
   fetchStats,
   fetchStatsActivity,
@@ -10,6 +15,7 @@ import {
   Typography,
   Paper,
   Box,
+  Button,
   ToggleButton,
   ToggleButtonGroup,
   CircularProgress,
@@ -34,8 +40,8 @@ import {
 // цветовая палитра
 const CHART_COLORS = {
   approved: "#10b981",
-  rejected: "#ef4444", 
-  requestChanges: "#f59e0b", 
+  rejected: "#ef4444",
+  requestChanges: "#f59e0b",
 };
 
 const PIE_COLORS = ["#10b981", "#ef4444", "#f59e0b"];
@@ -58,6 +64,47 @@ export const Stats = () => {
     queryKey: ["stats", "decisions", period],
     queryFn: () => fetchStatsDecisions(period),
   });
+
+  const handleExportCSV = () => {
+    if (!summary) return;
+    // Формируем CSV (BOM \uFEFF нужен для корректного отображения кириллицы в Excel)
+    const csvContent = [
+      ["Metric", "Value"],
+      ["Total Reviewed", summary.totalReviewed],
+      ["Approved %", summary.approvedPercentage],
+      ["Rejected %", summary.rejectedPercentage],
+      ["Avg Time (sec)", summary.averageReviewTime],
+    ]
+      .map((e) => e.join(","))
+      .join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    saveAs(blob, `stats-${period}.csv`);
+  };
+
+  const handleExportPDF = () => {
+    if (!summary) return;
+    const doc = new jsPDF();
+
+    // Заголовок
+    doc.text(`Moderator Stats (${period})`, 14, 22);
+
+    // Таблица
+    autoTable(doc, {
+      startY: 30,
+      head: [["Metric", "Value"]],
+      body: [
+        ["Total Reviewed", summary.totalReviewed],
+        ["Approved", `${summary.approvedPercentage.toFixed(1)}%`],
+        ["Rejected", `${summary.rejectedPercentage.toFixed(1)}%`],
+        ["Avg Time", `${summary.averageReviewTime} sec`],
+      ],
+    });
+
+    doc.save(`report-${period}.pdf`);
+  };
 
   const handlePeriodChange = (
     _: React.MouseEvent<HTMLElement>,
@@ -86,11 +133,7 @@ export const Stats = () => {
             {payload[0].payload.date}
           </Typography>
           {payload.map((entry: any, index: number) => (
-            <Typography
-              key={index}
-              variant="body2"
-              sx={{ color: entry.color }}
-            >
+            <Typography key={index} variant="body2" sx={{ color: entry.color }}>
               {entry.name}: {entry.value}
             </Typography>
           ))}
@@ -107,7 +150,7 @@ export const Stats = () => {
         ? decisions.approved + decisions.rejected + decisions.requestChanges
         : 0;
       const percentage = ((payload[0].value / total) * 100).toFixed(1);
-      
+
       return (
         <Paper
           elevation={3}
@@ -191,6 +234,14 @@ export const Stats = () => {
           <ToggleButton value="week">Неделя</ToggleButton>
           <ToggleButton value="month">Месяц</ToggleButton>
         </ToggleButtonGroup>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button startIcon={<DownloadIcon />} onClick={handleExportCSV}>
+            CSV
+          </Button>
+          <Button startIcon={<PictureAsPdfIcon />} onClick={handleExportPDF}>
+            PDF
+          </Button>
+        </Box>
       </Box>
 
       {isLoading ? (
@@ -363,7 +414,10 @@ export const Stats = () => {
                       tickLine={false}
                       axisLine={{ stroke: theme.palette.divider }}
                     />
-                    <Tooltip content={<CustomBarTooltip />} cursor={{ fill: alpha(theme.palette.primary.main, 0.1) }} />
+                    <Tooltip
+                      content={<CustomBarTooltip />}
+                      cursor={{ fill: alpha(theme.palette.primary.main, 0.1) }}
+                    />
                     <Legend
                       wrapperStyle={{
                         paddingTop: "20px",
