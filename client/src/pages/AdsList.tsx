@@ -31,14 +31,13 @@ import {
   Alert,
   CircularProgress,
   Paper,
-  SelectChangeEvent,
   InputAdornment,
   alpha,
   Fade,
 } from "@mui/material";
+import type {SelectChangeEvent} from "@mui/material";
 
 import Grid from "@mui/material/Grid2";
-import StarIcon from "@mui/icons-material/Star";
 import FilterListOffIcon from "@mui/icons-material/FilterListOff";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -167,7 +166,7 @@ export const AdsList = () => {
       sortBy,
       sortOrder,
     ],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       fetchAds({
         page,
         limit,
@@ -178,7 +177,7 @@ export const AdsList = () => {
         maxPrice: urlMaxPrice ? Number(urlMaxPrice) : undefined,
         sortBy,
         sortOrder,
-      }),
+      }, signal),
     // оставляем старые данные пока грузятся новые - убирает "мигание" интерфейса
     placeholderData: keepPreviousData,
     //  !! автообновление списка (в мс) - задание со *, однако что означает "Статус объявления" в пунтке 6.3 я не понял,
@@ -578,7 +577,6 @@ export const AdsList = () => {
 
       <Grid container spacing={3}>
         {data?.ads.map((ad) => {
-          const categoryData = CATEGORIES.find((c) => c.id === ad.categoryId);
           const isSelected = selectedAdIds.includes(ad.id);
           const statusConfig = STATUSES.find((s) => s.value === ad.status);
 

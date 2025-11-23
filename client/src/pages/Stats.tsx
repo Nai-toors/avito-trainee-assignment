@@ -52,7 +52,7 @@ export const Stats = () => {
 
   // Обработчик переключения периода
   const handlePeriodChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _: React.MouseEvent<HTMLElement>,
     newPeriod: "today" | "week" | "month" | null
   ) => {
     if (newPeriod !== null) {
@@ -188,7 +188,7 @@ export const Stats = () => {
                     dataKey="value"
                     label
                   >
-                    {pieData.map((entry, index) => (
+                    {pieData.map((_, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}

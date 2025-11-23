@@ -13,45 +13,58 @@ export const api = axios.create({
 
 // эта функция принимает params и возвращает Promise,
 // который содержит AdsResponse (типы из /types)
-export const fetchAds = async (params: {
-  page: number;
-  limit: number;
-  search?: string; // ? означает, что поле необязательное
-  categoryId?: number;
-  status?: string[];
-  minPrice?: number;
-  maxPrice?: number;
-  sortBy?: string;
-  sortOrder?: string;
-}) => {
-  const { data } = await api.get<AdsResponse>("/ads", { params });
+export const fetchAds = async (
+  params: {
+    page: number;
+    limit: number;
+    search?: string; // ? означает, что поле необязательное
+    categoryId?: number;
+    status?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  },
+  signal?: AbortSignal // задание со * (прерывание запросов). React Query делает это автоматически, но ему нужно передать signal в Axios
+) => {
+  const { data } = await api.get<AdsResponse>("/ads", { params, signal });
   return data;
 };
 
-export const fetchAdById = async (id: string) => {
-  const { data } = await api.get<AdDetails>(`/ads/${id}`);
+export const fetchAdById = async (id: string, signal?: AbortSignal) => {
+  const { data } = await api.get<AdDetails>(`/ads/${id}`, { signal });
   return data;
 };
 
-export const fetchStats = async (period: "today" | "week" | "month") => {
-  const { data } = await api.get("/stats/summary", { params: { period } });
+export const fetchStats = async (
+  period: "today" | "week" | "month",
+  signal?: AbortSignal
+) => {
+  const { data } = await api.get("/stats/summary", {
+    params: { period },
+    signal,
+  });
   return data;
 };
 
 export const fetchStatsActivity = async (
-  period: "today" | "week" | "month"
+  period: "today" | "week" | "month",
+  signal?: AbortSignal
 ) => {
   const { data } = await api.get("/stats/chart/activity", {
     params: { period },
+    signal,
   });
   return data;
 };
 
 export const fetchStatsDecisions = async (
-  period: "today" | "week" | "month"
+  period: "today" | "week" | "month",
+  signal?: AbortSignal
 ) => {
   const { data } = await api.get("/stats/chart/decisions", {
     params: { period },
+    signal,
   });
   return data;
 };
